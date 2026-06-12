@@ -1,5 +1,22 @@
 const STORAGE_KEY = "subitoCleanerEnabled";
 const HIDDEN_ATTR = "data-subito-cleaner-hidden";
+const PROMOTIONAL_WIDGET_SELECTOR = '.items__item.listing-widget';
+const IN_CONTENT_AD_SELECTOR = '[id^="listing-in-content"]';
+const AD_SLOT_SELECTORS = [
+  "#listing-above",
+  "#listing-below",
+  "#listing-native-1",
+  "#listing-box-1",
+  '[id^="listing-in-content"]',
+  '[id^="listing-native"]',
+  '[id^="listing-box"]',
+  '[class*="adsense-before-listing-container"]',
+  '[class*="smart-adv-lira"]',
+  '[class*="lira-container"]'
+];
+
+// TODO: aggiungere statistiche ad rimossi
+
 
 function normalizeText(text) {
   return (text || "").trim().toLowerCase();
@@ -34,6 +51,31 @@ function hideVetrinaListings() {
   return hidden;
 }
 
+function hidePromotionalWidgets() {
+  const widgets = document.querySelectorAll(PROMOTIONAL_WIDGET_SELECTOR);
+
+  for (const widget of widgets) {
+    widget.remove();
+  }
+
+  const adSlots = document.querySelectorAll(AD_SLOT_SELECTORS.join(','));
+
+  for (const adSlot of adSlots) {
+    removeClosestAdContainer(adSlot);
+  }
+}
+
+function removeClosestAdContainer(element) {
+  const container =
+      element.closest(".items__item.listing-widget") ||
+      element.closest('[class*="adsense-before-listing-container"]') ||
+      element.closest('[class*="smart-adv-lira"]') ||
+      element.closest('[class*="lira-container"]') ||
+      element;
+
+  container.remove();
+}
+
 function showVetrinaListings() {
   const hiddenListings = document.querySelectorAll(`[${HIDDEN_ATTR}="true"]`);
 
@@ -49,6 +91,7 @@ function applyFilter() {
 
     if (filterActive) {
       hideVetrinaListings();
+      hidePromotionalWidgets();
       return;
     }
 
